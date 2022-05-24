@@ -24,6 +24,7 @@ export async function main(ns) {
 	ns.tprint(`[${localeHHMMSS()}] Spawning hacknetManager.js`)
     await ns.run('spider.js', 1, 'hacknetManager.js')
 
+    let player = ns.getPlayer();
 	if(homeRam >= 256) {
 		if (player.inteligence > 0) { 
 			ns.tprint(`[${localeHHMMSS()}] Spawning createPrograms.js`)
@@ -34,7 +35,6 @@ export async function main(ns) {
 		}
 	}
 
-    let player = ns.getPlayer();
     if (player.hasTixApiAccess) {
       ns.tprint(`[${localeHHMMSS()}] Player has Tix API Access`)
       try {
