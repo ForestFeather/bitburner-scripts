@@ -1,4 +1,4 @@
-import { settings, setItem } from 'common.js'
+import { settings, setItem } from 'common.ns'
 
 const hackPrograms = ['BruteSSH.exe', 'FTPCrack.exe', 'relaySMTP.exe', 'HTTPWorm.exe', 'SQLInject.exe']
 
