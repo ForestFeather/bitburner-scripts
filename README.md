@@ -13,11 +13,11 @@ export async function main(ns) {
   }
 
   await ns.wget(
-    `https://dragons-burrow.com/git/ridayah/bitburner-scripts/raw/branch/master/launchSystems.js?ts=${new Date().getTime()}`,
+    `https://raw.githubusercontent.com/ForestFeather/bitburner-scripts/master/src/launchSystems.js?ts=${new Date().getTime()}`,
     "launchSystems.js"
   );
   ns.spawn("launchSystems.js", 1);
 }
 ```
 
-Then go `run start.ns`
+Then go `run start.js`
