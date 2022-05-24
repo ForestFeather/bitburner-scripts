@@ -1,7 +1,7 @@
 const settings = {
-  homeRamReserved: 20,
-  homeRamReservedBase: 20,
-  homeRamExtraRamReserved: 12,
+  homeRamReserved: 32,
+  homeRamReservedBase: 32,
+  homeRamExtraRamReserved: 128,
   homeRamBigMode: 64,
   minSecurityLevelOffset: 1,
   maxMoneyMultiplayer: 0.9,
@@ -29,7 +29,7 @@ function setItem(key, value) {
 }
 
 const hackPrograms = ['BruteSSH.exe', 'FTPCrack.exe', 'relaySMTP.exe', 'HTTPWorm.exe', 'SQLInject.exe']
-const hackScripts = ['hack.ns', 'grow.ns', 'weaken.ns']
+const hackScripts = ['hack.js', 'grow.js', 'weaken.js']
 
 function getPlayerDetails(ns) {
   let portHacks = 0
@@ -88,15 +88,15 @@ function weakenCyclesForHack(hackCycles) {
   return Math.max(0, Math.ceil(hackCycles * (settings.changes.hack / settings.changes.weaken)))
 }
 
-async function getHackableServers(ns, servers) {
+async function getvulnerableServers(ns, servers) {
   const playerDetails = getPlayerDetails(ns)
 
-  const hackableServers = Object.keys(servers)
+  const vulnerableServers = Object.keys(servers)
     .filter((hostname) => ns.serverExists(hostname))
     .filter((hostname) => servers[hostname].ports <= playerDetails.portHacks || ns.hasRootAccess(hostname))
     .filter((hostname) => servers[hostname].ram >= 2)
 
-  for (const hostname of hackableServers) {
+  for (const hostname of vulnerableServers) {
     if (hostname === 'home') continue;
     if (!ns.hasRootAccess(hostname)) {
       hackPrograms.forEach((hackProgram) => {
@@ -111,8 +111,8 @@ async function getHackableServers(ns, servers) {
 
   }
 
-  hackableServers.sort((a, b) => servers[a].ram - servers[b].ram)
-  return hackableServers
+  vulnerableServers.sort((a, b) => servers[a].ram - servers[b].ram)
+  return vulnerableServers
 }
 
 function findTargetServer(ns, serversList, servers, serverExtraData) {
@@ -121,8 +121,14 @@ function findTargetServer(ns, serversList, servers, serverExtraData) {
   serversList = serversList
     .filter((hostname) => servers[hostname].hackingLevel <= playerDetails.hackingLevel)
     .filter((hostname) => servers[hostname].maxMoney)
-    .filter((hostname) => hostname !== 'home')
+    /* .filter((hostname) => hostname !== 'home') */
     .filter((hostname) => ns.getWeakenTime(hostname) < settings.maxWeakenTime)
+
+/*  let printServerList = ''
+  for (let i = 0; i < serversList.length; i++) {
+      printServerList.concat(serversList[i].hostname, (serversList.length - 1 == i ? "" : ", "))
+  }
+  ns.tprint(`[${localeHHMMSS()}] Servers: ${printServerList}`) */
 
   let weightedServers = serversList.map((hostname) => {
     const fullHackCycles = Math.ceil(100 / Math.max(0.00000001, ns.hackAnalyze(hostname)))
@@ -149,7 +155,7 @@ function findTargetServer(ns, serversList, servers, serverExtraData) {
 }
 
 export async function main(ns) {
-  ns.tprint(`[${localeHHMMSS()}] Starting mainHack.ns`)
+  ns.tprint(`[${localeHHMMSS()}] Starting mainHack.js`)
 
   let hostname = ns.getHostname()
 
@@ -164,17 +170,20 @@ export async function main(ns) {
       settings.homeRamReserved = settings.homeRamReservedBase + settings.homeRamExtraRamReserved
     }
 
-    if (!serverMap || serverMap.lastUpdate < new Date().getTime() - settings.mapRefreshInterval) {
-      ns.tprint(`[${localeHHMMSS()}] Spawning spider.ns`)
-      ns.spawn('spider.ns', 1, 'mainHack.ns')
+    if (!serverMap || serverMap.lastUpdate < new Date().getTime() - settings.mapRefreshInterval || ( ns.getPurchasedServers() == 0 && serverMap.lastUpdate < new Date().getTime() - 100 * 60 * 5)) {
+      ns.tprint(`[${localeHHMMSS()}] Spawning spider.js`)
+      ns.spawn('spider.js', 1, 'mainHack.js')
       ns.exit()
       return
     }
+
+    ns.tprint(`[${localeHHMMSS()}] Home Ram: ${serverMap.servers.home.ram}, Reserving: ${settings.homeRamReserved}`)
     serverMap.servers.home.ram = Math.max(0, serverMap.servers.home.ram - settings.homeRamReserved)
+    ns.tprint(`[${localeHHMMSS()}] Home Ram Now: ${serverMap.servers.home.ram}`)
 
-    const hackableServers = await getHackableServers(ns, serverMap.servers)
+    const vulnerableServers = await getvulnerableServers(ns, serverMap.servers)
 
-    const targetServers = findTargetServer(ns, hackableServers, serverMap.servers, serverExtraData)
+    const targetServers = findTargetServer(ns, vulnerableServers, serverMap.servers, serverExtraData)
     const bestTarget = targetServers.shift()
     const hackTime = ns.getHackTime(bestTarget)
     const growTime = ns.getGrowTime(bestTarget)
@@ -187,7 +196,7 @@ export async function main(ns) {
     const money = ns.getServerMoneyAvailable(bestTarget)
 
     let action = 'weaken'
-    if (securityLevel > serverMap.servers[bestTarget].minSecurityLevel + settings.minSecurityLevelOffset) {
+    if ( /* money != ns.getServerMaxMoney(bestTarget) && */ securityLevel > serverMap.servers[bestTarget].minSecurityLevel + settings.minSecurityLevelOffset) {
       action = 'weaken'
     } else if (money < serverMap.servers[bestTarget].maxMoney * settings.maxMoneyMultiplayer) {
       action = 'grow'
@@ -199,8 +208,8 @@ export async function main(ns) {
     let growCycles = 0
     let weakenCycles = 0
 
-    for (let i = 0; i < hackableServers.length; i++) {
-      const server = serverMap.servers[hackableServers[i]]
+    for (let i = 0; i < vulnerableServers.length; i++) {
+      const server = serverMap.servers[vulnerableServers[i]]
       hackCycles += Math.floor(server.ram / 1.7)
       growCycles += Math.floor(server.ram / 1.75)
     }
@@ -239,44 +248,71 @@ export async function main(ns) {
         }`
       )
 
-      for (let i = 0; i < hackableServers.length; i++) {
-        const server = serverMap.servers[hackableServers[i]]
+      let growPrint = ""
+      let weakenPrint = ""
+      for (let i = 0; i < vulnerableServers.length; i++) {
+        const server = serverMap.servers[vulnerableServers[i]]
         let cyclesFittable = Math.max(0, Math.floor(server.ram / 1.75))
         const cyclesToRun = Math.max(0, Math.min(cyclesFittable, growCycles))
 
+        //ns.tprint(`[${localeHHMMSS()}] Action host: ${server.host}, Fittable: ${cyclesFittable}, To Run: ${cyclesToRun}`)
+
+        //if(cyclesToRun == 0 /*&& growCycles == 0*/) {
+        //  ns.tprint(`[${localeHHMMSS()}] No Cycles to run on host: ${server.host}`)
+        //  continue
+        //}
+
         if (growCycles) {
-          await ns.exec('grow.ns', server.host, cyclesToRun, bestTarget, cyclesToRun, growDelay, createUUID())
+          let outcome = await ns.exec('grow.js', server.host, cyclesToRun, bestTarget, cyclesToRun, growDelay, createUUID())
           growCycles -= cyclesToRun
           cyclesFittable -= cyclesToRun
+          growPrint += `${server.host}:${cyclesToRun}:${outcome}, `
         }
 
         if (cyclesFittable) {
-          await ns.exec('weaken.ns', server.host, cyclesFittable, bestTarget, cyclesFittable, 0, createUUID())
+          let outcome = await ns.exec('weaken.js', server.host, cyclesFittable, bestTarget, cyclesFittable, 0, createUUID())
           weakenCycles -= cyclesFittable
+          weakenPrint += `${server.host}:${cyclesToRun}:${outcome}, `
         }
       }
+
+      ns.tprint(`[${localeHHMMSS()}] Grows: ${growPrint}`)
+      ns.tprint(`[${localeHHMMSS()}] Weakens: ${weakenPrint}`)
+
     } else if (action === 'grow') {
       weakenCycles = weakenCyclesForGrow(growCycles)
       growCycles -= weakenCycles
 
       ns.tprint(`[${localeHHMMSS()}] Cycles ratio: ${growCycles} grow cycles; ${weakenCycles} weaken cycles`)
 
-      for (let i = 0; i < hackableServers.length; i++) {
-        const server = serverMap.servers[hackableServers[i]]
+      let growPrint = ""
+      let weakenPrint = ""
+      for (let i = 0; i < vulnerableServers.length; i++) {
+        const server = serverMap.servers[vulnerableServers[i]]
         let cyclesFittable = Math.max(0, Math.floor(server.ram / 1.75))
         const cyclesToRun = Math.max(0, Math.min(cyclesFittable, growCycles))
 
+        //if(cyclesToRun == 0) {
+        //  continue
+        //}
+
         if (growCycles) {
-          await ns.exec('grow.ns', server.host, cyclesToRun, bestTarget, cyclesToRun, growDelay, createUUID())
+          let outcome = await ns.exec('grow.js', server.host, cyclesToRun, bestTarget, cyclesToRun, growDelay, createUUID())
           growCycles -= cyclesToRun
           cyclesFittable -= cyclesToRun
+          growPrint += `${server.host}:${cyclesToRun}:${outcome}, `
         }
 
         if (cyclesFittable) {
-          await ns.exec('weaken.ns', server.host, cyclesFittable, bestTarget, cyclesFittable, 0, createUUID())
+          let outcome = await ns.exec('weaken.js', server.host, cyclesFittable, bestTarget, cyclesFittable, 0, createUUID())
           weakenCycles -= cyclesFittable
+          weakenPrint += `${server.host}:${cyclesToRun}:${outcome}, `
         }
       }
+
+      ns.tprint(`[${localeHHMMSS()}] Grows: ${growPrint}`)
+      ns.tprint(`[${localeHHMMSS()}] Weakens: ${weakenPrint}`)
+      
     } else {
       if (hackCycles > serverExtraData[bestTarget].fullHackCycles) {
         hackCycles = serverExtraData[bestTarget].fullHackCycles
@@ -300,15 +336,23 @@ export async function main(ns) {
 
       ns.tprint(`[${localeHHMMSS()}] Cycles ratio: ${hackCycles} hack cycles; ${growCycles} grow cycles; ${weakenCycles} weaken cycles`)
 
-      for (let i = 0; i < hackableServers.length; i++) {
-        const server = serverMap.servers[hackableServers[i]]
+      let hackPrint = ""
+      let growPrint = ""
+      let weakenPrint = ""
+      for (let i = 0; i < vulnerableServers.length; i++) {
+        const server = serverMap.servers[vulnerableServers[i]]
         let cyclesFittable = Math.max(0, Math.floor(server.ram / 1.7))
         const cyclesToRun = Math.max(0, Math.min(cyclesFittable, hackCycles))
 
+        //if(cyclesToRun == 0) {
+        //  continue
+        //}
+
         if (hackCycles) {
-          await ns.exec('hack.ns', server.host, cyclesToRun, bestTarget, cyclesToRun, hackDelay, createUUID())
+          let outcome = await ns.exec('hack.js', server.host, cyclesToRun, bestTarget, cyclesToRun, hackDelay, createUUID())
           hackCycles -= cyclesToRun
           cyclesFittable -= cyclesToRun
+          hackPrint += `${server.host}:${cyclesToRun}:${outcome}, `
         }
 
         const freeRam = server.ram - cyclesToRun * 1.7
@@ -317,16 +361,22 @@ export async function main(ns) {
         if (cyclesFittable && growCycles) {
           const growCyclesToRun = Math.min(growCycles, cyclesFittable)
 
-          await ns.exec('grow.ns', server.host, growCyclesToRun, bestTarget, growCyclesToRun, growDelay, createUUID())
+          let outcome = await ns.exec('grow.js', server.host, growCyclesToRun, bestTarget, growCyclesToRun, growDelay, createUUID())
           growCycles -= growCyclesToRun
           cyclesFittable -= growCyclesToRun
+          growPrint += `${server.host}:${cyclesToRun}:${outcome}, `
         }
 
         if (cyclesFittable) {
-          await ns.exec('weaken.ns', server.host, cyclesFittable, bestTarget, cyclesFittable, 0, createUUID())
+          let outcome = await ns.exec('weaken.js', server.host, cyclesFittable, bestTarget, cyclesFittable, 0, createUUID())
           weakenCycles -= cyclesFittable
+          weakenPrint += `${server.host}:${cyclesToRun}:${outcome}, `
         }
       }
+
+      ns.tprint(`[${localeHHMMSS()}] Hacks: ${hackPrint}`)
+      ns.tprint(`[${localeHHMMSS()}] Grows: ${growPrint}`)
+      ns.tprint(`[${localeHHMMSS()}] Weakens: ${weakenPrint}`)
     }
 
     await ns.sleep(weakenTime + 300)
