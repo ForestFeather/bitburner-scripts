@@ -3,7 +3,7 @@ export function settings() {
     minSecurityLevelOffset: 2,
     maxMoneyMultiplayer: 0.9,
     minSecurityWeight: 100,
-    mapRefreshInterval: 24 * 60 * 60 * 1000,
+    mapRefreshInterval: 24 * 60 * 60,
     keys: {
       serverMap: 'BB_SERVER_MAP',
       hackTarget: 'BB_HACK_TARGET',
