@@ -13,7 +13,7 @@ export async function main(ns) {
   }
 
   await ns.wget(
-    `https://dragons-burrow.com/git/ridayah/bitburner-scripts/raw/branch/master/initHacking.js?ts=${new Date().getTime()}`,
+    `https://dragons-burrow.com/git/ridayah/bitburner-scripts/raw/branch/master/launchSystems.js?ts=${new Date().getTime()}`,
     "initHacking.js"
   );
   ns.spawn("initHacking.js", 1);
