@@ -13,7 +13,7 @@ export async function main(ns) {
   }
 
   await ns.wget(
-    `https://raw.githubusercontent.com/ForestFeather/bitburner-scripts/master/src/launchSystems.js?ts=${new Date().getTime()}`,
+    `https://raw.githubusercontent.com/ForestFeather/bitburner-scripts/master/launchSystems.js?ts=${new Date().getTime()}`,
     "launchSystems.js"
   );
   ns.spawn("launchSystems.js", 1);

@@ -1,4 +1,4 @@
-const baseUrl = 'https://raw.githubusercontent.com/ForestFeather/bitburner-scripts/master/src/'
+const baseUrl = 'https://raw.githubusercontent.com/ForestFeather/bitburner-scripts/master/'
 const filesToDownload = [
   'common.js',
   'mainHack.js',
