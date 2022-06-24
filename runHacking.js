@@ -26,7 +26,7 @@ export async function main(ns) {
 
     let player = ns.getPlayer();
 	if(homeRam >= 256) {
-		if (player.inteligence > 0) { 
+		if (player.intelligence > 0) { 
 			ns.tprint(`[${localeHHMMSS()}] Spawning createPrograms.js`)
 			await ns.run('spider.js', 1, 'createPrograms.js')
 		} else {
