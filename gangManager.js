@@ -161,7 +161,7 @@ export async function main(ns) {
 		const equipmentsToBuy = getItem(settings.keys.equipmentList) || []
 		const augumentationssToBuy = getItem(settings.keys.augumentationList) || []
 
-		//ns.tprint(`Settings - Ascension: ${doAscension} Equipment: ${buyEquipment}`)
+		ns.tprint(`Settings - Ascension: ${doAscension} Equipment: ${buyEquipment}`)
 
 		while (ns.gang.canRecruitMember()) {
 			const gangMemberNames = getMemberNames(ns)
@@ -181,6 +181,7 @@ export async function main(ns) {
 			let hasAllEq = true
 
 			gangMemberNames.forEach((gangMemberName) => {
+				ns.print(`[${localeHHMMSS()}] Checking gear loadout for ${gangMemberName}`)
 				const gangMemberInfo = getMemberInformation(ns, gangMemberName)
 
 				equipmentsToBuy.forEach((equipment) => {
@@ -239,6 +240,7 @@ export async function main(ns) {
 
 		if (gangMemberNames.length && new Date().getTime() > nextAscensionAttempt) {
 			if (doAscension) {
+				ns.print(`[${localeHHMMSS()}] Checking for Ascension.`)
 				let strengthAscensionMultExpectation = 0
 				let minimumStrengthAscensionMult = Infinity
 				gangMemberNames.forEach((gangMemberName) => {
@@ -256,6 +258,7 @@ export async function main(ns) {
 				gangMemberNames.forEach((gangMemberName) => {
 					const gangMemberInfo = getMemberInformation(ns, gangMemberName)
 					if (gangMemberInfo.str_asc_mult < strengthAscensionMultExpectation) {
+						ns.print(`[${localeHHMMSS()}] ${gangMemberName} has lower strength asscention multiplier, let's go!`)
 						const boughtEquipment = equipmentsToBuy.filter((equipment) => gangMemberInfo.upgrades.includes(equipment.name))
 
 						if ((isEarlyAscension && boughtEquipment.length > 10) || boughtEquipment.length === equipmentsToBuy.length) {
