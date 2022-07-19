@@ -161,7 +161,7 @@ export async function main(ns) {
 		const equipmentsToBuy = getItem(settings.keys.equipmentList) || []
 		const augumentationssToBuy = getItem(settings.keys.augumentationList) || []
 
-		ns.tprint(`Settings - Ascension: ${doAscension} Equipment: ${buyEquipment}`)
+		//ns.tprint(`Settings - Ascension: ${doAscension} Equipment: ${buyEquipment}`)
 
 		while (ns.gang.canRecruitMember()) {
 			const gangMemberNames = getMemberNames(ns)
@@ -241,22 +241,19 @@ export async function main(ns) {
 		if (gangMemberNames.length && new Date().getTime() > nextAscensionAttempt) {
 			if (doAscension) {
 				ns.print(`[${localeHHMMSS()}] Checking for Ascension.`)
-				let strengthAscensionMultExpectation = 0
-				let minimumStrengthAscensionMult = Infinity
-				gangMemberNames.forEach((gangMemberName) => {
-					const gangMemberInfo = getMemberInformation(ns, gangMemberName)
-
-					minimumStrengthAscensionMult = Math.min(minimumStrengthAscensionMult, gangMemberInfo.str_asc_mult)
-				})
-
-				strengthAscensionMultExpectation = Math.max(0, minimumStrengthAscensionMult) + 2
-				strengthAscensionMultExpectation = Math.min(strengthAscensionMultExpectation, strengthAscensionMultHardLimit)
-
-				const isEarlyAscension = minimumStrengthAscensionMult < 2 ? true : false
 				const gangMembersToAscend = []
 
 				gangMemberNames.forEach((gangMemberName) => {
+					let strengthAscensionMultExpectation = 0
+					let minimumStrengthAscensionMult = Infinity
 					const gangMemberInfo = getMemberInformation(ns, gangMemberName)
+
+					minimumStrengthAscensionMult = Math.min(minimumStrengthAscensionMult, gangMemberInfo.str_asc_mult)
+					strengthAscensionMultExpectation = Math.max(0, minimumStrengthAscensionMult) + 2
+					strengthAscensionMultExpectation = Math.min(strengthAscensionMultExpectation, strengthAscensionMultHardLimit)
+					
+					const isEarlyAscension = minimumStrengthAscensionMult < 2 ? true : false
+					
 					if (gangMemberInfo.str_asc_mult < strengthAscensionMultExpectation) {
 						ns.print(`[${localeHHMMSS()}] ${gangMemberName} has lower strength asscention multiplier, let's go!`)
 						const boughtEquipment = equipmentsToBuy.filter((equipment) => gangMemberInfo.upgrades.includes(equipment.name))
@@ -277,7 +274,7 @@ export async function main(ns) {
 					})
 			}
 
-			nextAscensionAttempt = new Date().getTime() + 10 * 60 * 1000
+			nextAscensionAttempt = new Date().getTime() + 10 * 60
 		}
 
 		const myGang = getMyGangInformation(ns)
