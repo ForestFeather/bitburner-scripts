@@ -121,7 +121,7 @@ function findTargetServer(ns, serversList, servers, serverExtraData) {
   serversList = serversList
     .filter((hostname) => servers[hostname].hackingLevel <= playerDetails.hackingLevel)
     .filter((hostname) => servers[hostname].maxMoney)
-    .filter((hostname) => !hostname.includes('hacknet-node-'))
+    .filter((hostname) => !servers[hostname].includes('hacknet'))
     /* .filter((hostname) => hostname !== 'home') */
     .filter((hostname) => ns.getWeakenTime(hostname) < settings.maxWeakenTime)
 

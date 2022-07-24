@@ -16,6 +16,8 @@ const filesToDownload = [
   'prepareGang.js',
   'gangManager.js',
   'gym.js',
+  'launchSystems.js',
+  'sleeveManager.js',
  // 'startStock.js',
  // 'stockMarketer.js',
  // 'stockMarketer4S.js',
@@ -31,7 +33,7 @@ function localeHHMMSS(ms = 0) {
 }
 
 export async function main(ns) {
-  ns.tprint(`[${localeHHMMSS()}] Starting initHacking.js`)
+  ns.tprint(`[${localeHHMMSS()}] Starting launchSystems.js`)
 
   let hostname = ns.getHostname()
 
