@@ -95,6 +95,7 @@ async function getvulnerableServers(ns, servers) {
     .filter((hostname) => ns.serverExists(hostname))
     .filter((hostname) => servers[hostname].ports <= playerDetails.portHacks || ns.hasRootAccess(hostname))
     .filter((hostname) => servers[hostname].ram >= 2)
+	.filter((hostname) => !servers[hostname].host.includes('hacknet'))
 
   for (const hostname of vulnerableServers) {
     if (hostname === 'home') continue;
