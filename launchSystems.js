@@ -16,7 +16,7 @@ const filesToDownload = [
   'prepareGang.js',
   'gangManager.js',
   'gym.js',
-  'launchSystems.js',
+//  'launchSystems.js',
   'sleeveManager.js',
  // 'startStock.js',
  // 'stockMarketer.js',
