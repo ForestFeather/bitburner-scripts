@@ -208,8 +208,9 @@ async function pickSleeveTask(ns, playerInfo, i, sleeve, canTrain) {
 		// If a prior attempt to assign a sleeve a default task failed, use a fallback
 		else if (Date.now() - bladeburnerTaskFailed[i] < 5 * 60 * 1000) // 5 minutes seems reasonable for now
 			[action, contractName] = ["Infiltrate synthoids"]; // Fall-back to something long-term useful
+		let contractEvaluation = contractName || "";
 		return [`Bladeburner ${action} ${contractName || ''}`.trimEnd(),
-        /*   */ `ns.sleeve.setToBladeburnerAction(${i}, '${action}', '${contractName}' || ""})`,
+        /*   */ `ns.sleeve.setToBladeburnerAction(${i}, '${action}', '${contractEvaluation}')`,
         /*   */ `doing ${action}${contractName ? ` - ${contractName}` : ''} in Bladeburner.`];
 	}
 	// Finally, do crime for Karma. Homicide has the rate gain, if we can manage a decent success rate.
